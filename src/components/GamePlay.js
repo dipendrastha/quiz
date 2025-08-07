@@ -12,6 +12,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [textAnswer, setTextAnswer] = useState('');
   const [isPassedQuestion, setIsPassedQuestion] = useState(false);
+  const [teamsAttempted, setTeamsAttempted] = useState(new Set());
 
   const { teams, categories, questions, scores, currentTeam } = gameData;
 
@@ -48,6 +49,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setShowOptions(false);
     setTextAnswer('');
     setIsPassedQuestion(false);
+    setTeamsAttempted(new Set());
     setTimeLeft(60);
     setTimerActive(true);
   };
@@ -68,22 +70,32 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     } else {
       newScores[currentTeamName] -= 1;
       onUpdate({ scores: newScores });
+      const newTeamsAttempted = new Set([...teamsAttempted, currentTeamName]);
+      setTeamsAttempted(newTeamsAttempted);
       setShowResult(true);
+      
       setTimeout(() => {
-        if (isPassedQuestion) {
-          // Same team continues, go back to categories
-          setCurrentView('categories');
-          setCurrentQuestion(null);
-          setSelectedAnswer(null);
-          setShowResult(false);
-          setSelectedCategory('');
-          setShowOptions(false);
-          setTextAnswer('');
-          setIsPassedQuestion(false);
-          setTimeLeft(60);
-          setTimerActive(false);
+        if (newTeamsAttempted.size >= teams.length) {
+          // All teams have attempted, keep showing result with correct answer
+          setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
+          // Show correct answer for 3 seconds then continue
+          setTimeout(() => {
+            const nextTeamIndex = (currentTeam + 1) % teams.length;
+            onUpdate({ currentTeam: nextTeamIndex });
+            setCurrentView('categories');
+            setCurrentQuestion(null);
+            setSelectedAnswer(null);
+            setShowResult(false);
+            setSelectedCategory('');
+            setShowOptions(false);
+            setTextAnswer('');
+            setIsPassedQuestion(false);
+            setTeamsAttempted(new Set());
+            setTimeLeft(60);
+            setTimerActive(false);
+          }, 3000);
         } else {
-          // Pass to next team
+          // Pass to next team without showing correct answer
           const nextTeamIndex = (currentTeam + 1) % teams.length;
           onUpdate({ currentTeam: nextTeamIndex });
           setSelectedAnswer(null);
@@ -142,6 +154,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setShowOptions(false);
     setTextAnswer('');
     setIsPassedQuestion(true);
+    setTeamsAttempted(prev => new Set([...prev, currentTeamName]));
     setTimeLeft(60);
     setTimerActive(true);
   };
@@ -154,20 +167,30 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       onUpdate({ scores: newScores });
       setShowResult(true);
       setTimeout(() => {
-        if (isPassedQuestion) {
-          // Same team continues, go back to categories
-          setCurrentView('categories');
-          setCurrentQuestion(null);
-          setSelectedAnswer(null);
-          setShowResult(false);
-          setSelectedCategory('');
-          setShowOptions(false);
-          setTextAnswer('');
-          setIsPassedQuestion(false);
-          setTimeLeft(60);
-          setTimerActive(false);
+        const newTeamsAttempted = new Set([...teamsAttempted, currentTeamName]);
+        setTeamsAttempted(newTeamsAttempted);
+        
+        if (newTeamsAttempted.size >= teams.length) {
+          // All teams have attempted, keep showing result with correct answer
+          setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
+          // Show correct answer for 3 seconds then continue
+          setTimeout(() => {
+            const nextTeamIndex = (currentTeam + 1) % teams.length;
+            onUpdate({ currentTeam: nextTeamIndex });
+            setCurrentView('categories');
+            setCurrentQuestion(null);
+            setSelectedAnswer(null);
+            setShowResult(false);
+            setSelectedCategory('');
+            setShowOptions(false);
+            setTextAnswer('');
+            setIsPassedQuestion(false);
+            setTeamsAttempted(new Set());
+            setTimeLeft(60);
+            setTimerActive(false);
+          }, 3000);
         } else {
-          // Pass to next team
+          // Pass to next team without showing correct answer
           const nextTeamIndex = (currentTeam + 1) % teams.length;
           onUpdate({ currentTeam: nextTeamIndex });
           setSelectedAnswer(null);
@@ -214,6 +237,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setShowOptions(false);
     setTextAnswer('');
     setIsPassedQuestion(false);
+    setTeamsAttempted(new Set());
     setTimeLeft(60);
     setTimerActive(false);
   };
@@ -439,14 +463,15 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
                 <div
                   key={index}
                   className={`option ${selectedAnswer === index ? 'selected' : ''}`}
+                  data-letter={String.fromCharCode(65 + index)}
                   onClick={() => !showResult && setSelectedAnswer(index)}
                   style={{ 
                     cursor: showResult ? 'default' : 'pointer',
                     backgroundColor: showResult ? (
-                      index === selectedAnswer ? (selectedAnswer === currentQuestion.correctAnswer ? '#c6f6d5' : '#fed7d7') : 'white'
+                      index === selectedAnswer ? (selectedAnswer === currentQuestion.correctAnswer ? 'rgba(46,213,115,0.3)' : 'rgba(255,71,87,0.3)') : undefined
                     ) : undefined,
                     borderColor: showResult ? (
-                      index === selectedAnswer ? (selectedAnswer === currentQuestion.correctAnswer ? '#38a169' : '#e53e3e') : '#e2e8f0'
+                      index === selectedAnswer ? (selectedAnswer === currentQuestion.correctAnswer ? '#2ed573' : '#ff4757') : '#ffd700'
                     ) : undefined
                   }}
                 >
@@ -468,13 +493,26 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
                     (!showOptions ? 'Wrong Answer! -1 Point!' : 'Wrong Answer! -2 Points!')
                 }
               </div>
-              <p style={{ marginTop: '15px', color: '#4a5568' }}>
+              <p style={{ marginTop: '15px', color: '#89b4fa' }}>
                 {currentTeamName} now has {scores[currentTeamName]} points
               </p>
               {!showOptions && (selectedAnswer !== currentQuestion.correctAnswer && textAnswer.toLowerCase().trim() !== currentQuestion.options[currentQuestion.correctAnswer].toLowerCase()) && (
-                <p style={{ marginTop: '10px', color: '#e53e3e', fontWeight: 'bold' }}>
-                  Passing to next team...
-                </p>
+                <div>
+                  {teamsAttempted.size >= teams.length ? (
+                    <div style={{ marginTop: '15px', textAlign: 'center' }}>
+                      <p style={{ color: '#f9e2af', fontWeight: 'bold', marginBottom: '10px' }}>
+                        Correct Answer: {currentQuestion.options[currentQuestion.correctAnswer]}
+                      </p>
+                      <p style={{ color: '#6c7086' }}>
+                        All teams attempted. Moving to next question...
+                      </p>
+                    </div>
+                  ) : (
+                    <p style={{ marginTop: '10px', color: '#f38ba8', fontWeight: 'bold' }}>
+                      Passing to next team... ({teamsAttempted.size}/{teams.length} teams attempted)
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           )}

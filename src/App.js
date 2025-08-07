@@ -4,6 +4,8 @@ import TeamSetup from './components/TeamSetup';
 import CategorySetup from './components/CategorySetup';
 import QuestionSetup from './components/QuestionSetup';
 import GamePlay from './components/GamePlay';
+import MusicPlayer from './components/MusicPlayer';
+import SidebarScoreboard from './components/SidebarScoreboard';
 import './App.css';
 
 function App() {
@@ -200,7 +202,19 @@ function App() {
 
   return (
     <div className="container">
-      {renderCurrentView()}
+      <MusicPlayer />
+      <div className="main-content">
+        {renderCurrentView()}
+      </div>
+      {gameData.teams && gameData.teams.length > 0 && (
+        <div className="sidebar">
+          <SidebarScoreboard 
+            teams={gameData.teams}
+            scores={gameData.scores}
+            currentTeam={gameData.currentTeam}
+          />
+        </div>
+      )}
     </div>
   );
 }
