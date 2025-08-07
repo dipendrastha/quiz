@@ -1,0 +1,292 @@
+{
+  "teams": ["Team A", "Team B", "Team C", "Team D"],
+  "categories": [
+    "Linux & Security",
+    "DevOps",
+    "AI & ML",
+    "Current Affairs",
+    "Cloud"
+  ],
+  "questions": {
+    "Linux & Security": [
+      {
+        "question": "Which kernel mechanism isolates network, PIDs, and filesystems for containers?",
+        "options": ["Firewall", "Control", "Namespace", "Sandbox"],
+        "correctAnswer": 2,
+        "id": 1754584787871
+      },
+      {
+        "question": "Which tool traces system calls and signals?",
+        "options": ["Tcpdump", "Top", "Watch", "Strace"],
+        "correctAnswer": 3,
+        "id": 1754584832198
+      },
+      {
+        "question": "Which syscall is used to create a new process?",
+        "options": ["Fork", "Exec", "Open", "Start"],
+        "correctAnswer": 0,
+        "id": 1754584864598
+      },
+      {
+        "question": "Which Content Security Policy (CSP) directive controls whether a web page can be embedded in an <iframe>?",
+        "options": [
+          "Frame-ancestors",
+          "iframe-src",
+          "embed-policy",
+          "frame-options"
+        ],
+        "correctAnswer": 0,
+        "id": 1754584900001
+      },
+      {
+        "question": "Which classical cipher replaces each letter with a letter a fixed number of positions down the alphabet?",
+        "options": ["Vigenère", "Playfair", "Caesar", "Transposition"],
+        "correctAnswer": 2,
+        "id": 1754584900002
+      },
+      {
+        "question": "What browser feature isolates websites into separate processes to mitigate cross-site attacks?",
+        "options": [
+          "Cookie Partitioning",
+          "Same-Origin Policy",
+          "Cross-Domain Firewall",
+          "Site Isolation"
+        ],
+        "correctAnswer": 3,
+        "id": 1754584900003
+      },
+      {
+        "question": "What system call is typically used to create new processes in Linux?",
+        "options": ["Fork()", "spawn()", "exec()", "newproc()"],
+        "correctAnswer": 0,
+        "id": 1754584900004
+      },
+      {
+        "question": "What permission bit on a directory allows users to delete only their own files?",
+        "options": ["Setgid", "Setuid", "Sticky", "Immutable flag"],
+        "correctAnswer": 2,
+        "id": 1754584900005
+      },
+      {
+        "question": "What command is used to display shared libraries used by a binary?",
+        "options": ["nm", "ldd", "objdump", "grep"],
+        "correctAnswer": 1,
+        "id": 1754584900006
+      },
+      {
+        "question": "What HTTP header is used to prevent MIME-type sniffing?",
+        "options": [
+          "Content-Control",
+          "Content-Security",
+          "X-Content-Type-Options",
+          "X-MIME-Block"
+        ],
+        "correctAnswer": 2,
+        "id": 1754584900007
+      }
+    ],
+    "DevOps": [
+      {
+        "question": "What is the primary difference between Docker’s COPY and ADD instructions in a Dockerfile?",
+        "options": [
+          "ADD supports remote URLs and auto-extracts tar files, COPY does not",
+          "COPY supports remote URLs, ADD does not",
+          "Both are functionally identical",
+          "ADD works only with local files, COPY can download from URLs"
+        ],
+        "correctAnswer": 0,
+        "id": 1754585900001
+      },
+      {
+        "question": "Which Docker storage driver is considered the default on most Linux distributions and supports copy-on-write?",
+        "options": ["aufs", "overlay2", "devicemapper", "btrfs"],
+        "correctAnswer": 1,
+        "id": 1754585900002
+      },
+      {
+        "question": "What is the main purpose of a \"lock file\" (e.g., package-lock.json or Gemfile.lock) in CI/CD pipelines?",
+        "options": [
+          "Prevent unauthorized changes to the source code",
+          "Pin dependency versions to ensure build consistency",
+          "Speed up build times by caching dependencies",
+          "Automatically update dependencies to the latest version"
+        ],
+        "correctAnswer": 1,
+        "id": 1754585900003
+      },
+      {
+        "question": "How can Kubernetes scheduler be extended or customized to support additional scheduling logic?",
+        "options": [
+          "Admission Controllers",
+          "Custom Resource Definitions (CRDs)",
+          "Scheduling Framework Plugins",
+          "Network Policies"
+        ],
+        "correctAnswer": 2,
+        "id": 1754585900004
+      },
+      {
+        "question": "Which of the following best describes the concept of \"Shift Left\" in DevOps?",
+        "options": [
+          "Postponing security checks to the deployment phase",
+          "Automating rollback processes",
+          "Performing testing and security earlier in the development lifecycle",
+          "Moving infrastructure management to a separate team"
+        ],
+        "correctAnswer": 2,
+        "id": 1754585900005
+      },
+      {
+        "question": "What is the primary function of the kubelet in a Kubernetes node?",
+        "options": [
+          "Load balance between pods",
+          "Manage persistent storage",
+          "Ensure containers are running in pods as expected",
+          "Route traffic between services"
+        ],
+        "correctAnswer": 2,
+        "id": 1754585900006
+      },
+      {
+        "question": "What does the Kubernetes \"Horizontal Pod Autoscaler\" (HPA) primarily scale based on?",
+        "options": [
+          "Number of user requests",
+          "Container size",
+          "CPU/memory usage or custom metrics",
+          "Time of day"
+        ],
+        "correctAnswer": 2,
+        "id": 1754585900007
+      },
+      {
+        "question": "What is the effect of using --network host in docker run on Linux?",
+        "options": [
+          "The container uses a bridged network",
+          "The container shares the host’s network stack directly",
+          "It isolates the container from all networks",
+          "It creates a new network namespace for the container"
+        ],
+        "correctAnswer": 1,
+        "id": 1754585900008
+      },
+      {
+        "question": "Which Git object type is used to store the actual content of files?",
+        "options": ["Tree", "Commit", "Tag", "Blob"],
+        "correctAnswer": 3,
+        "id": 1754585900009
+      }
+    ],
+    "AI & ML": [
+      {
+        "question": "What does “overfitting” mean in machine learning?",
+        "options": [
+          "The model fits the training data too well and performs poorly on new data",
+          "The model is too simple to learn from data",
+          "The data has missing values",
+          "The model is trained on incorrect labels"
+        ],
+        "correctAnswer": 0,
+        "id": 1754586900001
+      },
+      {
+        "question": "In reinforcement learning, what is a “reward”?",
+        "options": [
+          "The total number of episodes",
+          "The feedback signal used to guide the learning agent",
+          "The training data",
+          "The accuracy score of the model"
+        ],
+        "correctAnswer": 1,
+        "id": 1754586900002
+      },
+      {
+        "question": "What is the full form of CNN in deep learning?",
+        "options": [
+          "Convolutional Neural Network",
+          "Central Neural Network",
+          "Computerized Neural Network",
+          "Conditional Neural Node"
+        ],
+        "correctAnswer": 0,
+        "id": 1754586900003
+      },
+      {
+        "question": "Which of the following is NOT a type of machine learning?",
+        "options": [
+          "Supervised Learning",
+          "Unsupervised Learning",
+          "Reinforcement Learning",
+          "Reactive Learning"
+        ],
+        "correctAnswer": 3,
+        "id": 1754586900004
+      },
+      {
+        "question": "What type of learning is most appropriate when you want an agent to learn from its interactions with an environment?",
+        "options": [
+          "Supervised learning",
+          "Unsupervised learning",
+          "Reinforcement learning",
+          "Transfer learning"
+        ],
+        "correctAnswer": 2,
+        "id": 1754586900005
+      },
+      {
+        "question": "When was the Turing Test, a fundamental concept in AI, proposed by Alan Turing?",
+        "options": ["1940", "1950", "1960", "1970"],
+        "correctAnswer": 1,
+        "id": 1754586900006
+      },
+      {
+        "question": "Who is widely regarded as the Father of Artificial Intelligence?",
+        "options": [
+          "Alan Turing",
+          "John McCarthy",
+          "Marvin Minsky",
+          "Geoffrey Hinton"
+        ],
+        "correctAnswer": 1,
+        "id": 1754586900007
+      },
+      {
+        "question": "What is the activation function commonly used in neural networks?",
+        "options": [
+          "Fourier transform",
+          "Sigmoid",
+          "Derivative",
+          "Average pooling"
+        ],
+        "correctAnswer": 1,
+        "id": 1754586900008
+      },
+      {
+        "question": "Which of the following is an example of a supervised learning task?",
+        "options": [
+          "Market basket analysis",
+          "Predicting house prices",
+          "Topic modeling",
+          "Customer segmentation"
+        ],
+        "correctAnswer": 1,
+        "id": 1754586900009
+      },
+      {
+        "question": "What is the primary use of the F1 score in machine learning?",
+        "options": [
+          "To measure the accuracy of regression models",
+          "To balance precision and recall in classification problems",
+          "To calculate the training time of a model",
+          "To determine the size of the training dataset"
+        ],
+        "correctAnswer": 1,
+        "id": 1754586900010
+      }
+    ]
+  },
+  "scores": {},
+  "currentTeam": 0,
+  "gameStarted": false,
+  "usedQuestions": [],
+  "currentView": "questions"
+}
