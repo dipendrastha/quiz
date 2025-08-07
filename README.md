@@ -52,4 +52,4 @@ All game data is automatically saved to localStorage and persists between browse
 
 - React 18
 - CSS3 with modern styling
-- localStorage for data persistence
+- localStorage for data persistence# quiz
