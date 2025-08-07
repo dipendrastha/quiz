@@ -13,6 +13,8 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const [textAnswer, setTextAnswer] = useState('');
   const [isPassedQuestion, setIsPassedQuestion] = useState(false);
   const [teamsAttempted, setTeamsAttempted] = useState(new Set());
+  const [originalTeam, setOriginalTeam] = useState(null);
+  const [nextTurnTeam, setNextTurnTeam] = useState(0);
 
   const { teams, categories, questions, scores, currentTeam } = gameData;
 
@@ -50,6 +52,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setTextAnswer('');
     setIsPassedQuestion(false);
     setTeamsAttempted(new Set());
+    setOriginalTeam(currentTeam);
     setTimeLeft(60);
     setTimerActive(true);
   };
@@ -67,6 +70,13 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      // If this was a passed question and answered correctly, next turn goes to next team from original
+      if (isPassedQuestion && originalTeam !== null) {
+        setNextTurnTeam((originalTeam + 1) % teams.length);
+      } else {
+        // Normal case: next team in sequence
+        setNextTurnTeam((currentTeam + 1) % teams.length);
+      }
     } else {
       newScores[currentTeamName] -= 1;
       onUpdate({ scores: newScores });
@@ -80,8 +90,10 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
           setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
           // Show correct answer for 3 seconds then continue
           setTimeout(() => {
-            const nextTeamIndex = (currentTeam + 1) % teams.length;
-            onUpdate({ currentTeam: nextTeamIndex });
+            // Next turn goes to the next team in sequence from original team
+            const nextTurn = (originalTeam + 1) % teams.length;
+            setNextTurnTeam(nextTurn);
+            onUpdate({ currentTeam: nextTurn });
             setCurrentView('categories');
             setCurrentQuestion(null);
             setSelectedAnswer(null);
@@ -91,6 +103,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
             setTextAnswer('');
             setIsPassedQuestion(false);
             setTeamsAttempted(new Set());
+            setOriginalTeam(null);
             setTimeLeft(60);
             setTimerActive(false);
           }, 3000);
@@ -122,26 +135,20 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      // If this was a passed question and answered correctly, next turn goes to next team from original
+      if (isPassedQuestion && originalTeam !== null) {
+        setNextTurnTeam((originalTeam + 1) % teams.length);
+      } else {
+        // Normal case: next team in sequence
+        setNextTurnTeam((originalTeam + 1) % teams.length);
+      }
     } else {
       newScores[currentTeamName] -= 2;
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
-      if (isPassedQuestion) {
-        // Same team continues after 2 seconds, go back to categories
-        setTimeout(() => {
-          setCurrentView('categories');
-          setCurrentQuestion(null);
-          setSelectedAnswer(null);
-          setShowResult(false);
-          setSelectedCategory('');
-          setShowOptions(false);
-          setTextAnswer('');
-          setIsPassedQuestion(false);
-          setTimeLeft(60);
-          setTimerActive(false);
-        }, 2000);
-      }
+      // Options mode: question is not passable, next turn goes to next team
+      setNextTurnTeam((originalTeam + 1) % teams.length);
     }
   };
 
@@ -175,8 +182,10 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
           setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
           // Show correct answer for 3 seconds then continue
           setTimeout(() => {
-            const nextTeamIndex = (currentTeam + 1) % teams.length;
-            onUpdate({ currentTeam: nextTeamIndex });
+            // Next turn goes to the next team in sequence from original team
+            const nextTurn = (originalTeam + 1) % teams.length;
+            setNextTurnTeam(nextTurn);
+            onUpdate({ currentTeam: nextTurn });
             setCurrentView('categories');
             setCurrentQuestion(null);
             setSelectedAnswer(null);
@@ -186,6 +195,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
             setTextAnswer('');
             setIsPassedQuestion(false);
             setTeamsAttempted(new Set());
+            setOriginalTeam(null);
             setTimeLeft(60);
             setTimerActive(false);
           }, 3000);
@@ -208,27 +218,14 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
-      if (isPassedQuestion) {
-        // Same team continues after 2 seconds, go back to categories
-        setTimeout(() => {
-          setCurrentView('categories');
-          setCurrentQuestion(null);
-          setSelectedAnswer(null);
-          setShowResult(false);
-          setSelectedCategory('');
-          setShowOptions(false);
-          setTextAnswer('');
-          setIsPassedQuestion(false);
-          setTimeLeft(60);
-          setTimerActive(false);
-        }, 2000);
-      }
+      // Options mode: question is not passable, next turn goes to next team
+      setNextTurnTeam((originalTeam + 1) % teams.length);
     }
   };
 
   const nextTurn = () => {
-    const nextTeamIndex = (currentTeam + 1) % teams.length;
-    onUpdate({ currentTeam: nextTeamIndex });
+    // Set current team to the next turn team
+    onUpdate({ currentTeam: nextTurnTeam });
     setCurrentView('categories');
     setCurrentQuestion(null);
     setSelectedAnswer(null);
@@ -238,6 +235,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setTextAnswer('');
     setIsPassedQuestion(false);
     setTeamsAttempted(new Set());
+    setOriginalTeam(null);
     setTimeLeft(60);
     setTimerActive(false);
   };
@@ -354,23 +352,26 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     return (
       <div className="card">
         <div className="question-header">
-          <h1 className="title">🎯 Choose Category</h1>
-          <div className="points-display">
-            Current Team: {currentTeamName}
+          <h1 className="title">🎯 Select Team & Category</h1>
+        </div>
+        
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ color: '#89b4fa', marginBottom: '12px' }}>Choose Team:</h3>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {teams.map((team, index) => (
+              <button
+                key={team}
+                className={`btn ${index === currentTeam ? 'btn-success' : ''}`}
+                onClick={() => onUpdate({ currentTeam: index })}
+              >
+                {team} ({scores[team]} pts)
+              </button>
+            ))}
           </div>
         </div>
-
-        <div className="scoreboard">
-          <h3 style={{ marginBottom: '15px' }}>Scoreboard:</h3>
-          {teams.map(team => (
-            <div 
-              key={team} 
-              className={`score-item ${team === currentTeamName ? 'current-team' : ''}`}
-            >
-              <span style={{ fontWeight: 'bold' }}>{team}</span>
-              <span className="points-display">{scores[team]} pts</span>
-            </div>
-          ))}
+        
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ color: '#89b4fa', marginBottom: '12px' }}>Choose Category for {currentTeamName}:</h3>
         </div>
 
         <div className="category-grid">
@@ -496,21 +497,34 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
               <p style={{ marginTop: '15px', color: '#89b4fa' }}>
                 {currentTeamName} now has {scores[currentTeamName]} points
               </p>
-              {!showOptions && (selectedAnswer !== currentQuestion.correctAnswer && textAnswer.toLowerCase().trim() !== currentQuestion.options[currentQuestion.correctAnswer].toLowerCase()) && (
+              {(selectedAnswer !== currentQuestion.correctAnswer && textAnswer.toLowerCase().trim() !== currentQuestion.options[currentQuestion.correctAnswer].toLowerCase()) && (
                 <div>
-                  {teamsAttempted.size >= teams.length ? (
+                  {!showOptions ? (
+                    // Text mode: only show correct answer when all teams attempted
+                    teamsAttempted.size >= teams.length ? (
+                      <div style={{ marginTop: '15px', textAlign: 'center' }}>
+                        <p style={{ color: '#f9e2af', fontWeight: 'bold', marginBottom: '10px' }}>
+                          Correct Answer: {currentQuestion.options[currentQuestion.correctAnswer]}
+                        </p>
+                        <p style={{ color: '#6c7086' }}>
+                          All teams attempted. Next turn: {teams[(originalTeam + 1) % teams.length]}...
+                        </p>
+                      </div>
+                    ) : (
+                      <p style={{ marginTop: '10px', color: '#f38ba8', fontWeight: 'bold' }}>
+                        Passing to next team... ({teamsAttempted.size}/{teams.length} teams attempted)
+                      </p>
+                    )
+                  ) : (
+                    // Options mode: always show correct answer for wrong answers
                     <div style={{ marginTop: '15px', textAlign: 'center' }}>
                       <p style={{ color: '#f9e2af', fontWeight: 'bold', marginBottom: '10px' }}>
                         Correct Answer: {currentQuestion.options[currentQuestion.correctAnswer]}
                       </p>
                       <p style={{ color: '#6c7086' }}>
-                        All teams attempted. Moving to next question...
+                        Next turn: {teams[(originalTeam + 1) % teams.length]}...
                       </p>
                     </div>
-                  ) : (
-                    <p style={{ marginTop: '10px', color: '#f38ba8', fontWeight: 'bold' }}>
-                      Passing to next team... ({teamsAttempted.size}/{teams.length} teams attempted)
-                    </p>
                   )}
                 </div>
               )}
@@ -539,11 +553,9 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
                 </button>
               )
             ) : (
-              (showOptions && selectedAnswer !== currentQuestion.correctAnswer && isPassedQuestion) ? null : (
-                <button className="btn" onClick={nextTurn}>
-                  Continue Game
-                </button>
-              )
+              <button className="btn" onClick={nextTurn}>
+                Back to Team Selection
+              </button>
             )}
           </div>
         </div>
