@@ -315,7 +315,7 @@
       {
         "question": "What is the default maximum number of inbound/outbound rules per security group?",
         "options": ["50", "60", "100", "125"],
-        "correctAnswer": null,
+        "correctAnswer": 1,
         "id": 1754588000003
       },
       {
@@ -358,14 +358,14 @@
         "id": 1754588000007
       },
       {
-        "question": "You added a new Lambda layer to your function, but deployment fails due to size limits. What is the most likely cause?",
+        "question": " You added a new Lambda layer to your function, but deployment fails due to size limits. What is the most likely cause?",
         "options": [
           "You exceeded the unzipped combined size limit of 250 MB for code + layers",
           "You attached more than 5 Lambda layers to the function",
           "Your function’s zipped deployment package exceeded 75 MB",
           "All of the above"
         ],
-        "correctAnswer": 0,
+        "correctAnswer": 2,
         "id": 1754588000008
       },
       {
