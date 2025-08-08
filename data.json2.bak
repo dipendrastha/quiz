@@ -87,6 +87,16 @@
     ],
     "DevOps": [
       {
+        "question": "What does git fsck do?",
+        "options": [
+          "It resets your working directory",
+          "It checks the connectivity and validity of Git objects",
+          "It formats your Git history.",
+          "It finds merge conflicts."
+        ],
+        "correctAnswer": 1,
+        "id": 1754585900000
+      },
         "question": "What is the primary difference between Docker’s COPY and ADD instructions in a Dockerfile?",
         "options": [
           "ADD supports remote URLs and auto-extracts tar files, COPY does not",
@@ -174,17 +184,6 @@
         "options": ["Tree", "Commit", "Tag", "Blob"],
         "correctAnswer": 3,
         "id": 1754585900009
-      },
-      {
-        "question": "What does git fsck do?",
-        "options": [
-          "It resets your working directory",
-          "It checks the connectivity and validity of Git objects",
-          "It formats your Git history",
-          "It finds merge conflicts"
-        ],
-        "correctAnswer": 1,
-        "id": 1754585900010
       }
     ],
     "AI & ML": [
@@ -315,7 +314,7 @@
       {
         "question": "What is the default maximum number of inbound/outbound rules per security group?",
         "options": ["50", "60", "100", "125"],
-        "correctAnswer": null,
+        "correctAnswer": 1,
         "id": 1754588000003
       },
       {
@@ -367,17 +366,6 @@
         ],
         "correctAnswer": 0,
         "id": 1754588000008
-      },
-      {
-        "question": "❓ Which type of Azure Storage account supports hierarchical namespace for big data analytics workloads?",
-        "options": [
-          "General-purpose v2 (GPv2) standard storage account",
-          "Blob storage account without hierarchical namespace",
-          "Azure Data Lake Storage Gen2 (ADLS Gen2)",
-          "Premium file storage account"
-        ],
-        "correctAnswer": 2,
-        "id": 1754588000009
       }
     ],
     "Current Affairs": [

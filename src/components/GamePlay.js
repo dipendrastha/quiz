@@ -15,6 +15,8 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const [teamsAttempted, setTeamsAttempted] = useState(new Set());
   const [originalTeam, setOriginalTeam] = useState(null);
   const [nextTurnTeam, setNextTurnTeam] = useState(0);
+  const [gameStateBackup, setGameStateBackup] = useState(null);
+  const [showUndo, setShowUndo] = useState(false);
 
   const { teams, categories, questions, scores, currentTeam } = gameData;
 
@@ -53,6 +55,8 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setIsPassedQuestion(false);
     setTeamsAttempted(new Set());
     setOriginalTeam(currentTeam);
+    setShowUndo(false);
+    setGameStateBackup(null);
     setTimeLeft(60);
     setTimerActive(true);
   };
@@ -60,6 +64,16 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const submitTextAnswer = () => {
     if (!textAnswer.trim()) return;
     setTimerActive(false);
+    
+    // Create backup before processing answer
+    setGameStateBackup({
+      scores: { ...scores },
+      currentTeam,
+      teamsAttempted: new Set(teamsAttempted),
+      originalTeam,
+      nextTurnTeam,
+      usedQuestions: new Set(usedQuestions)
+    });
 
     const correctOption = currentQuestion.options[currentQuestion.correctAnswer].toLowerCase();
     const isCorrect = textAnswer.toLowerCase().trim() === correctOption;
@@ -70,6 +84,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowUndo(false); // Hide undo for correct answers
       // If this was a passed question and answered correctly, next turn goes to next team from original
       if (isPassedQuestion && originalTeam !== null) {
         setNextTurnTeam((originalTeam + 1) % teams.length);
@@ -83,6 +98,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       const newTeamsAttempted = new Set([...teamsAttempted, currentTeamName]);
       setTeamsAttempted(newTeamsAttempted);
       setShowResult(true);
+      setShowUndo(true); // Show undo for wrong answers
       
       setTimeout(() => {
         if (newTeamsAttempted.size >= teams.length) {
@@ -104,20 +120,48 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
             setIsPassedQuestion(false);
             setTeamsAttempted(new Set());
             setOriginalTeam(null);
+            setShowUndo(false);
+            setGameStateBackup(null);
             setTimeLeft(60);
             setTimerActive(false);
           }, 3000);
         } else {
-          // Pass to next team without showing correct answer
+          // Check if we've completed one full cycle
           const nextTeamIndex = (currentTeam + 1) % teams.length;
-          onUpdate({ currentTeam: nextTeamIndex });
-          setSelectedAnswer(null);
-          setShowResult(false);
-          setShowOptions(false);
-          setTextAnswer('');
-          setIsPassedQuestion(true);
-          setTimeLeft(60);
-          setTimerActive(true);
+          if (nextTeamIndex === originalTeam) {
+            // Completed one full cycle, show correct answer and end question
+            setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
+            setTeamsAttempted(new Set(teams.map(team => team))); // Mark all as attempted to show correct answer
+            setTimeout(() => {
+              const nextTurn = (originalTeam + 1) % teams.length;
+              setNextTurnTeam(nextTurn);
+              onUpdate({ currentTeam: nextTurn });
+              setCurrentView('categories');
+              setCurrentQuestion(null);
+              setSelectedAnswer(null);
+              setShowResult(false);
+              setSelectedCategory('');
+              setShowOptions(false);
+              setTextAnswer('');
+              setIsPassedQuestion(false);
+              setTeamsAttempted(new Set());
+              setOriginalTeam(null);
+              setShowUndo(false);
+              setGameStateBackup(null);
+              setTimeLeft(60);
+              setTimerActive(false);
+            }, 3000);
+          } else {
+            // Pass to next team without showing correct answer
+            onUpdate({ currentTeam: nextTeamIndex });
+            setSelectedAnswer(null);
+            setShowResult(false);
+            setShowOptions(false);
+            setTextAnswer('');
+            setIsPassedQuestion(true);
+            setTimeLeft(60);
+            setTimerActive(true);
+          }
         }
       }, 2000);
     }
@@ -126,6 +170,16 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const submitOptionAnswer = () => {
     if (selectedAnswer === null) return;
     setTimerActive(false);
+    
+    // Create backup before processing answer
+    setGameStateBackup({
+      scores: { ...scores },
+      currentTeam,
+      teamsAttempted: new Set(teamsAttempted),
+      originalTeam,
+      nextTurnTeam,
+      usedQuestions: new Set(usedQuestions)
+    });
 
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
     const newScores = { ...scores };
@@ -135,6 +189,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowUndo(false); // Hide undo for correct answers
       // If this was a passed question and answered correctly, next turn goes to next team from original
       if (isPassedQuestion && originalTeam !== null) {
         setNextTurnTeam((originalTeam + 1) % teams.length);
@@ -147,32 +202,85 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowUndo(true); // Show undo for wrong answers
       // Options mode: question is not passable, next turn goes to next team
       setNextTurnTeam((originalTeam + 1) % teams.length);
     }
   };
 
   const passQuestion = () => {
+    // Create backup before passing
+    setGameStateBackup({
+      scores: { ...scores },
+      currentTeam,
+      teamsAttempted: new Set(teamsAttempted),
+      originalTeam,
+      nextTurnTeam,
+      usedQuestions: new Set(usedQuestions)
+    });
+    
     setTimerActive(false);
     const nextTeamIndex = (currentTeam + 1) % teams.length;
-    onUpdate({ currentTeam: nextTeamIndex });
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setShowOptions(false);
-    setTextAnswer('');
-    setIsPassedQuestion(true);
-    setTeamsAttempted(prev => new Set([...prev, currentTeamName]));
-    setTimeLeft(60);
-    setTimerActive(true);
+    
+    // Check if we've completed one full cycle before passing
+    if (nextTeamIndex === originalTeam) {
+      // Completed one full cycle, show correct answer and end question
+      setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
+      setTeamsAttempted(new Set(teams.map(team => team))); // Mark all as attempted to show correct answer
+      setShowResult(true);
+      setShowUndo(true);
+      setTimeout(() => {
+        const nextTurn = (originalTeam + 1) % teams.length;
+        setNextTurnTeam(nextTurn);
+        onUpdate({ currentTeam: nextTurn });
+        setCurrentView('categories');
+        setCurrentQuestion(null);
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setSelectedCategory('');
+        setShowOptions(false);
+        setTextAnswer('');
+        setIsPassedQuestion(false);
+        setTeamsAttempted(new Set());
+        setOriginalTeam(null);
+        setShowUndo(false);
+        setGameStateBackup(null);
+        setTimeLeft(60);
+        setTimerActive(false);
+      }, 3000);
+    } else {
+      // Pass to next team
+      onUpdate({ currentTeam: nextTeamIndex });
+      setSelectedAnswer(null);
+      setShowResult(false);
+      setShowOptions(false);
+      setTextAnswer('');
+      setIsPassedQuestion(true);
+      setTeamsAttempted(prev => new Set([...prev, currentTeamName]));
+      setShowUndo(false); // Don't show undo during passing cycle
+      setTimeLeft(60);
+      setTimerActive(true);
+    }
   };
 
   const handleTimeUp = () => {
+    // Create backup before timeout
+    setGameStateBackup({
+      scores: { ...scores },
+      currentTeam,
+      teamsAttempted: new Set(teamsAttempted),
+      originalTeam,
+      nextTurnTeam,
+      usedQuestions: new Set(usedQuestions)
+    });
+    
     setTimerActive(false);
     if (!showOptions) {
       const newScores = { ...scores };
       newScores[currentTeamName] -= 1;
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowUndo(true); // Show undo for timeout
       setTimeout(() => {
         const newTeamsAttempted = new Set([...teamsAttempted, currentTeamName]);
         setTeamsAttempted(newTeamsAttempted);
@@ -196,20 +304,48 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
             setIsPassedQuestion(false);
             setTeamsAttempted(new Set());
             setOriginalTeam(null);
+            setShowUndo(false);
+            setGameStateBackup(null);
             setTimeLeft(60);
             setTimerActive(false);
           }, 3000);
         } else {
-          // Pass to next team without showing correct answer
+          // Check if we've completed one full cycle
           const nextTeamIndex = (currentTeam + 1) % teams.length;
-          onUpdate({ currentTeam: nextTeamIndex });
-          setSelectedAnswer(null);
-          setShowResult(false);
-          setShowOptions(false);
-          setTextAnswer('');
-          setIsPassedQuestion(true);
-          setTimeLeft(60);
-          setTimerActive(true);
+          if (nextTeamIndex === originalTeam) {
+            // Completed one full cycle, show correct answer and end question
+            setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
+            setTeamsAttempted(new Set(teams.map(team => team))); // Mark all as attempted to show correct answer
+            setTimeout(() => {
+              const nextTurn = (originalTeam + 1) % teams.length;
+              setNextTurnTeam(nextTurn);
+              onUpdate({ currentTeam: nextTurn });
+              setCurrentView('categories');
+              setCurrentQuestion(null);
+              setSelectedAnswer(null);
+              setShowResult(false);
+              setSelectedCategory('');
+              setShowOptions(false);
+              setTextAnswer('');
+              setIsPassedQuestion(false);
+              setTeamsAttempted(new Set());
+              setOriginalTeam(null);
+              setShowUndo(false);
+              setGameStateBackup(null);
+              setTimeLeft(60);
+              setTimerActive(false);
+            }, 3000);
+          } else {
+            // Pass to next team without showing correct answer
+            onUpdate({ currentTeam: nextTeamIndex });
+            setSelectedAnswer(null);
+            setShowResult(false);
+            setShowOptions(false);
+            setTextAnswer('');
+            setIsPassedQuestion(true);
+            setTimeLeft(60);
+            setTimerActive(true);
+          }
         }
       }, 2000);
     } else {
@@ -218,9 +354,33 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowUndo(true); // Show undo for timeout in options mode
       // Options mode: question is not passable, next turn goes to next team
       setNextTurnTeam((originalTeam + 1) % teams.length);
     }
+  };
+
+  const undoLastAction = () => {
+    if (!gameStateBackup) return;
+    
+    // Restore previous state
+    onUpdate({ 
+      scores: gameStateBackup.scores,
+      currentTeam: gameStateBackup.currentTeam
+    });
+    setTeamsAttempted(gameStateBackup.teamsAttempted);
+    setOriginalTeam(gameStateBackup.originalTeam);
+    setNextTurnTeam(gameStateBackup.nextTurnTeam);
+    setUsedQuestions(gameStateBackup.usedQuestions);
+    
+    // Reset question state
+    setShowResult(false);
+    setSelectedAnswer(null);
+    setTextAnswer('');
+    setShowUndo(false);
+    setGameStateBackup(null);
+    setTimeLeft(60);
+    setTimerActive(true);
   };
 
   const nextTurn = () => {
@@ -236,6 +396,8 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
     setIsPassedQuestion(false);
     setTeamsAttempted(new Set());
     setOriginalTeam(null);
+    setShowUndo(false);
+    setGameStateBackup(null);
     setTimeLeft(60);
     setTimerActive(false);
   };
@@ -500,14 +662,14 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
               {(selectedAnswer !== currentQuestion.correctAnswer && textAnswer.toLowerCase().trim() !== currentQuestion.options[currentQuestion.correctAnswer].toLowerCase()) && (
                 <div>
                   {!showOptions ? (
-                    // Text mode: only show correct answer when all teams attempted
+                    // Text mode: only show correct answer when all teams attempted or one full cycle completed
                     teamsAttempted.size >= teams.length ? (
                       <div style={{ marginTop: '15px', textAlign: 'center' }}>
                         <p style={{ color: '#f9e2af', fontWeight: 'bold', marginBottom: '10px' }}>
                           Correct Answer: {currentQuestion.options[currentQuestion.correctAnswer]}
                         </p>
                         <p style={{ color: '#6c7086' }}>
-                          All teams attempted. Next turn: {teams[(originalTeam + 1) % teams.length]}...
+                          {teamsAttempted.size === teams.length ? 'One full cycle completed.' : 'All teams attempted.'} Next turn: {teams[(originalTeam + 1) % teams.length]}...
                         </p>
                       </div>
                     ) : (
@@ -533,29 +695,47 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
 
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
             {!showResult ? (
-              !showOptions ? (
-                <button 
-                  className="btn btn-success" 
-                  onClick={submitTextAnswer}
-                  disabled={!textAnswer.trim() || timeLeft === 0}
-                  style={{ opacity: (!textAnswer.trim() || timeLeft === 0) ? 0.5 : 1 }}
-                >
-                  Submit Answer (10 pts)
-                </button>
-              ) : (
-                <button 
-                  className="btn btn-success" 
-                  onClick={submitOptionAnswer}
-                  disabled={selectedAnswer === null || timeLeft === 0}
-                  style={{ opacity: (selectedAnswer === null || timeLeft === 0) ? 0.5 : 1 }}
-                >
-                  Submit Answer (5 pts)
-                </button>
-              )
+              <div>
+                {!showOptions ? (
+                  <button 
+                    className="btn btn-success" 
+                    onClick={submitTextAnswer}
+                    disabled={!textAnswer.trim() || timeLeft === 0}
+                    style={{ opacity: (!textAnswer.trim() || timeLeft === 0) ? 0.5 : 1 }}
+                  >
+                    Submit Answer (10 pts)
+                  </button>
+                ) : (
+                  <button 
+                    className="btn btn-success" 
+                    onClick={submitOptionAnswer}
+                    disabled={selectedAnswer === null || timeLeft === 0}
+                    style={{ opacity: (selectedAnswer === null || timeLeft === 0) ? 0.5 : 1 }}
+                  >
+                    Submit Answer (5 pts)
+                  </button>
+                )}
+                {showUndo && (
+                  <button 
+                    className="btn btn-danger" 
+                    onClick={undoLastAction}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    Undo
+                  </button>
+                )}
+              </div>
             ) : (
-              <button className="btn" onClick={nextTurn}>
-                Back to Team Selection
-              </button>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                {showUndo && (
+                  <button className="btn btn-danger" onClick={undoLastAction}>
+                    Undo Last Action
+                  </button>
+                )}
+                <button className="btn" onClick={nextTurn}>
+                  Back to Team Selection
+                </button>
+              </div>
             )}
           </div>
         </div>
