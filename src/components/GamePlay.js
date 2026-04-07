@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CelebrationEffect from './CelebrationEffect';
 
 const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const [currentView, setCurrentView] = useState('categories');
@@ -17,6 +18,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   const [nextTurnTeam, setNextTurnTeam] = useState(0);
   const [gameStateBackup, setGameStateBackup] = useState(null);
   const [showUndo, setShowUndo] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const { teams, categories, questions, scores, currentTeam } = gameData;
 
@@ -24,6 +26,15 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   useEffect(() => {
     onUpdate({ usedQuestions: Array.from(usedQuestions) });
   }, [usedQuestions]);
+
+  // Sync usedQuestions when gameData.usedQuestions changes (e.g., after import)
+  useEffect(() => {
+    const propUsedQuestions = new Set(gameData.usedQuestions || []);
+    if (propUsedQuestions.size !== usedQuestions.size ||
+        ![...propUsedQuestions].every(q => usedQuestions.has(q))) {
+      setUsedQuestions(propUsedQuestions);
+    }
+  }, [gameData.usedQuestions]);
   const currentTeamName = teams[currentTeam];
 
   const selectCategory = (category) => {
@@ -84,6 +95,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowCelebration(true);
       setShowUndo(false); // Hide undo for correct answers
       // If this was a passed question and answered correctly, next turn goes to next team from original
       if (isPassedQuestion && originalTeam !== null) {
@@ -189,6 +201,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
       setUsedQuestions(prev => new Set([...prev, `${selectedCategory}-${currentQuestion.id}`]));
       onUpdate({ scores: newScores });
       setShowResult(true);
+      setShowCelebration(true);
       setShowUndo(false); // Hide undo for correct answers
       // If this was a passed question and answered correctly, next turn goes to next team from original
       if (isPassedQuestion && originalTeam !== null) {
@@ -572,6 +585,7 @@ const GamePlay = ({ gameData, onUpdate, onReset, onExport, onImport }) => {
   if (currentView === 'question') {
     return (
       <div className="card">
+        <CelebrationEffect show={showCelebration} onComplete={() => setShowCelebration(false)} />
         <div className="question-header">
           <h2 style={{ color: '#4a5568' }}>Category: {selectedCategory}</h2>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>

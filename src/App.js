@@ -98,7 +98,8 @@ function App() {
             questions: importedData.questions || {},
             scores: importedData.scores || {},
             currentTeam: importedData.currentTeam || 0,
-            gameStarted: importedData.gameStarted || false
+            gameStarted: importedData.gameStarted || false,
+            usedQuestions: importedData.usedQuestions || []
           });
           setCurrentView(importedData.currentView || 'host');
           alert('Data imported successfully!');

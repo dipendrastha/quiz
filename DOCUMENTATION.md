@@ -9,6 +9,7 @@
 6. [State Management](#state-management)
 7. [Key Features](#key-features)
 8. [Code Locations](#code-locations)
+9. [Backend Integration](#backend-integration)
 
 ## Project Overview
 
@@ -657,3 +658,25 @@ const importData = (event) => {
 ```
 
 This documentation provides a comprehensive overview of the quiz application's architecture, logic, and implementation details. Each section includes specific file locations and code references for easy navigation and maintenance.
+
+## Backend Integration
+
+For future backend integration, the application can be configured using environment variables.
+
+### Configuration
+Create a `.env` file in the root directory:
+```env
+REACT_APP_API_URL=https://api.example.com
+```
+
+### POST Requests
+When sending data to the backend, ensure that environment variables are used to define the target endpoints. For example:
+```javascript
+const response = await fetch(`${process.env.REACT_APP_API_URL}/scores`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(scoreData),
+});
+```
